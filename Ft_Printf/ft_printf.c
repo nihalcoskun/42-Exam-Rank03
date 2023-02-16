@@ -26,82 +26,79 @@ out: Hexadecimal for 42 is 2a$*/
 
 #include <stdarg.h>
 #include <unistd.h>
+#include <stdio.h>
 
-void put_str(char *str, int *len)
+int ft_putstr(char *str)
 {
+    int count = 0;
+
     if(!str)
     {
-        str = "(null)";
+        count += write(1,"(null)",6);
+        return (count);
     }
     while(*str)
     {
-        *len += write(1,str++,1);
+        count += write(1,str++,1);
     }
+    return (count);
 }
 
-void put_digit(long long int nbr, int base, int *len)
+int ft_putnbr(long num, int base)
 {
-    char *hexa;
-    hexa = "0123456789abcdef";
-
-    if(nbr < 0)
+    int count = 0;
+    if(num < 0)
     {
-        nbr *= -1;
-        *len += write(1,"-",1);
-    }
-
-    if(nbr >= base)
+        num *= -1;
+        count += write(1,"-",1);
+    } 
+    if(num > (base -1))
     {
-        put_digit((nbr / base), base, len);
+        count += ft_putnbr((num / base), base);
     }
-
-    *len += write(1,&hexa[nbr % base],1);
+    count += write(1,&"0123456789abcdef"[num % base],1);
+    return (count);
 }
 
 
-int ft_printf(const char *format, ... )
+
+int ft_printf(const char *str, ... )
 {
-    int len;
-    va_list ptr;
+    int count = 0;
+    va_list list;
 
-    len = 0;
-    va_start(ptr,format);
+    va_start(list,str);
 
-    while(*format)
+    while(*str)
     {
-        if((*format == '%') && *(format + 1))
+        if(*str == '%')
         {
-            format++;
-            if(*format == 's')
+            str++;
+            if(*str == 's')
             {
-                put_str((char *)va_arg(ptr, char*), &len);
+                count += ft_putstr(va_arg(list, char*));
             }
-            else if(*format == 'd')
+            else if(*str == 'd')
             {
-                put_digit((long long int)va_arg(ptr, int), 10, &len);
+                count += ft_putnbr(va_arg(list, int), 10);
             }
-            else if(*format == 'x')
+            else if(*str == 'x')
             {
-                  put_digit((long long int)va_arg(ptr, unsigned int), 16, &len);
+                count += ft_putnbr(va_arg(list, unsigned int), 16);
             }
         }
-
         else
         {
-            len += write(1,format,1);
+            count += write(1,str,1);
         }
-
-        format++;
+        str++;
     }
-
-    return (va_end(ptr) , len);
+    return (count);
 }
 
-
-
 int main()
- {
+{
     ft_printf("%s\n", "toto");
     ft_printf("Magic %s is %d", "number", 42);
     ft_printf("Hexadecimal for %d is %x\n", 42, 42);
- }
+}
